@@ -1,0 +1,137 @@
+---
+title: "Bean Analysis"
+author: "Oil Stone Analytics"
+date: "12/11/2021"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r packages, echo=FALSE}
+
+# Libraries
+#install.packages("tidyverse")
+suppressMessages(suppressWarnings(library(tidyverse)))
+suppressMessages(suppressWarnings(library(lme4)))
+suppressMessages(suppressWarnings(library(openxlsx)))
+suppressMessages(suppressWarnings(library(readxl)))
+suppressMessages(suppressWarnings(library(summarytools)))
+suppressMessages(suppressWarnings(library(cowplot)))
+  suppressMessages(suppressWarnings(library(DT)))
+suppressMessages(suppressWarnings(library(downloadthis)))
+suppressMessages(suppressWarnings(library(emmeans)))
+suppressMessages(suppressWarnings(library(metan)))
+suppressMessages(suppressWarnings(library(agricolae)))
+suppressMessages(suppressWarnings(library(variability)))
+```
+
+
+```{r soga, echo=FALSE, warning=FALSE, message=FALSE, fig.height = 8, fig.width = 12}
+# Data
+bean <- read_excel('C:/Users/NTANDO/Downloads/combined all traits all seasons.xlsx',
+                      sheet = 1)
+
+
+```
+
+# Descriptive Statistics
+
+```{r , echo=FALSE, warning=FALSE, message=FALSE}
+
+bean$Location <- as.factor(bean$Location)
+bean$Rep <- as.factor(bean$Rep)
+bean$Block <- as.factor(bean$Block)
+bean$GENO <- as.factor(bean$GENO)
+
+
+#checking data
+data <- bean[, c(2, 4, 5, 6, 12, 19, 20)]
+j <- desc_stat(data) # descriptives
+j %>%
+  datatable(extensions = 'Buttons',
+            options = list(dom = 'lfrtipB',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+
+# Outliers
+#for (i in colnames(data)) {
+#  find_outliers(data[[i]], plots = TRUE)
+#}
+```
+
+
+
+
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# ANOVA joint
+joint_an <- anova_joint(data, 
+                    env = Location, 
+                    gen = GENO, 
+                    rep = Rep, 
+                    block = Block,
+                    resp = everything()) # Resolvable 
+
+#Predicted values
+#k <- get_model_data(joint_an)
+
+#k %>%
+#  datatable(extensions = 'Buttons',
+#            options = list(dom = 'lfrtipB',
+#                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+#                           lengthMenu = list(c(10,25,50,-1),
+#                                             c(10,25,50,"All"))))
+
+# Details
+j <- get_model_data(joint_an, "details")
+j %>%
+  datatable(extensions = 'Buttons',
+            options = list(dom = 'lfrtipB',
+                           buttons = c('copy', 'csv', 'excel', 'pdf', 'print'),
+                           lengthMenu = list(c(10,25,50,-1),
+                                             c(10,25,50,"All"))))
+
+```
+
+# AMMI
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# AMMI
+
+ammi_model <- with(data, AMMI(Location, GENO, Rep, `Kg/ha`, console = FALSE))
+ammi_model$ANOVA
+plot(ammi_model)
+plot(ammi_model, type=2, number = TRUE)
+plot(ammi_model, first = 0, second = 1, number = TRUE)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# AMMI
+
+ammi_model <- with(data, AMMI(Location, GENO, Rep, Iron, console = FALSE))
+ammi_model$ANOVA
+plot(ammi_model)
+plot(ammi_model, type=2, number = TRUE)
+plot(ammi_model, first = 0, second = 1, number = TRUE)
+
+```
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+# AMMI
+
+ammi_model <- with(data, AMMI(Location, GENO, Rep, Zinc, console = FALSE))
+ammi_model$ANOVA
+plot(ammi_model)
+plot(ammi_model, type=2, number = TRUE)
+plot(ammi_model, first = 0, second = 1, number = TRUE)
+
+```
